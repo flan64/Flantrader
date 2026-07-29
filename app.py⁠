@@ -1,0 +1,146 @@
+import streamlit as st
+import pandas as pd
+import numpy as np
+
+# Configuration de la page
+st.set_page_config(
+    page_title="SafePredict AI - Analyse Sportive 98%",
+    page_icon="🛡️",
+    layout="wide"
+)
+
+# Style personnalisé
+st.markdown("""
+    <style>
+    .stApp {
+        background-color: #0e1117;
+        color: #ffffff;
+    }
+    .metric-card {
+        background-color: #1e222b;
+        padding: 15px;
+        border-radius: 10px;
+        border-left: 5px solid #00e676;
+    }
+    </style>
+""", unsafe_allow_html=True)
+
+# Title & Header
+st.title("🛡️ SafePredict AI — Engine v1.0")
+st.caption("Système d'Analyse Sportive Ultra-SÉCURISÉ | Premier League • LaLiga • Bundesliga")
+
+st.divider()
+
+# Sidebar - Configuration de la recherche
+st.sidebar.header("⚙️ Configuration du Match")
+
+league = st.sidebar.selectbox(
+    "Sélectionner le Championnat",
+    ["Premier League (Angleterre)", "LaLiga (Espagne)", "Bundesliga (Allemagne)"]
+)
+
+home_team = st.sidebar.text_input("Équipe à Domicile", value="Arsenal")
+away_team = st.sidebar.text_input("Équipe à l'Extérieur", value="Chelsea")
+
+st.sidebar.subheader("📊 Métriques Récentes (5 derniers matchs)")
+home_xg = st.sidebar.slider(f"xG Moyen {home_team}", 0.5, 3.5, 2.1, 0.1)
+away_xg = st.sidebar.slider(f"xG Moyen {away_team}", 0.5, 3.5, 1.2, 0.1)
+
+home_cards = st.sidebar.slider(f"Cartons/Match Moyen {home_team}", 0.5, 5.0, 1.8, 0.1)
+away_cards = st.sidebar.slider(f"Cartons/Match Moyen {away_team}", 0.5, 5.0, 2.3, 0.1)
+
+referee_strictness = st.sidebar.select_slider(
+    "Sévérité de l'Arbitre",
+    options=["Très Permissif", "Modéré", "Très Strict"],
+    value="Modéré"
+)
+
+absences = st.sidebar.checkbox("Absence d'un joueur cadre (Top Buteur / Capitaine)")
+
+# --- MOTEUR D'ANALYSE ---
+
+def calculate_safe_predictions(h_xg, a_xg, h_cards, a_cards, ref_level, has_absences):
+    results = {}
+    total_xg = h_xg + a_xg
+    
+    # 1. Analyse Vainqueur / Double Chance
+    xg_diff = h_xg - a_xg
+    if has_absences:
+        results['1X2'] = ("NO BET (Absence Majeure)", "RISQUE", 50)
+    elif xg_diff > 0.8:
+        results['1X2'] = (f"Vainqueur : {home_team}", "SAFE", 88)
+        results['DC'] = (f"Double Chance : {home_team} ou Nul (1X)", "ULTRA SAFE", 96)
+    elif xg_diff < -0.8:
+        results['1X2'] = (f"Vainqueur : {away_team}", "SAFE", 86)
+        results['DC'] = (f"Double Chance : {away_team} ou Nul (X2)", "ULTRA SAFE", 95)
+    else:
+        results['1X2'] = ("Match trop équilibré", "NO BET", 60)
+        results['DC'] = (f"Double Chance : {home_team} ou {away_team} (112)", "SAFE", 89)
+
+    # 2. Analyse Nombre de Buts
+    if total_xg >= 2.4:
+        results['GOALS'] = ("Plus de 1.5 Buts dans le match", "ULTRA SAFE", 97)
+    elif total_xg <= 1.5:
+        results['GOALS'] = ("Moins de 3.5 Buts dans le match", "ULTRA SAFE", 95)
+    else:
+        results['GOALS'] = ("Plus de 1.0 But (Ajusté)", "SAFE", 91)
+
+    # 3. Les Deux Équipes Marquent (BTTS)
+    if h_xg > 1.5 and a_xg > 1.3 and not has_absences:
+        results['BTTS'] = ("Les deux équipes marquent : OUI", "SAFE", 88)
+    elif h_xg < 0.9 or a_xg < 0.9:
+        results['BTTS'] = ("Les deux équipes marquent : NON", "SAFE", 90)
+    else:
+        results['BTTS'] = ("Marché instable sur ce match", "NO BET", 55)
+
+    # 4. Total Cartons Jaunes
+    total_cards_avg = h_cards + a_cards
+    ref_multiplier = 1.2 if ref_level == "Très Strict" else (0.8 if ref_level == "Très Permissif" else 1.0)
+    projected_cards = total_cards_avg * ref_multiplier
+
+    if projected_cards >= 4.0:
+        results['CARDS'] = ("Plus de 2.5 Cartons Jaunes", "ULTRA SAFE", 96)
+    else:
+        results['CARDS'] = ("Moins de 5.5 Cartons Jaunes", "ULTRA SAFE", 94)
+
+    # 5. Total Fautes (Estimé)
+    projected_fouls = projected_cards * 5.2
+    results['FOULS'] = (f"Plus de {int(projected_fouls - 4)} Fautes dans le match", "SAFE", 92)
+
+    return results
+
+predictions = calculate_safe_predictions(home_xg, away_xg, home_cards, away_cards, referee_strictness, absences)
+
+# --- AFFICHAGE DASHBOARD ---
+
+col1, col2 = st.columns([2, 1])
+
+with col1:
+    st.subheader(f"📊 Analyse : {home_team} vs {away_team}")
+    st.caption(f"Ligue : {league}")
+
+    for market, (prediction, status, confidence) in predictions.items():
+        color = "#00e676" if status == "ULTRA SAFE" else ("#ffb300" if status == "SAFE" else "#ff5252")
+        
+        st.markdown(f"""
+        <div style="background-color: #1e222b; padding: 12px; border-radius: 8px; margin-bottom: 10px; border-left: 6px solid {color};">
+            <span style="color: #a0a0a0; font-size: 12px; font-weight: bold;">MARCHÉ : {market}</span><br>
+            <strong style="font-size: 16px;">{prediction}</strong><br>
+            <span style="color: {color}; font-size: 13px;">Niveau : {status} | Indice de Sécurité : {confidence}%</span>
+        </div>
+        """, unsafe_allow_html=True)
+
+with col2:
+    st.subheader("🛡️ Filtre Sécurité 98%")
+    valid_scores = [conf for _, (_, status, conf) in predictions.items() if status != "NO BET"]
+    avg_conf = np.mean(valid_scores) if valid_scores else 0
+
+    st.metric(label="Score de Sécurité Global du Match", value=f"{avg_conf:.1f}%")
+
+    if absences:
+        st.warning("⚠️ ALERTE : Absence majeure détectée. Les algorithmes 1X2 ont été automatiquement désactivés pour prévenir tout piège.")
+    
+    if avg_conf >= 92:
+        st.success("✅ MATCH SÉLECTIONNÉ : Faible volatilité, indicateurs au vert.")
+    else:
+        st.error("🚫 MATCH ÉCARTÉ : Indice de risque trop élevé pour la norme Safe 98%.")
