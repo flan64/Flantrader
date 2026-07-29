@@ -6,7 +6,7 @@ from datetime import datetime
 # CONFIGURATION DE LA PAGE & THÈME ROUGE (JOSIASTRADER)
 # ---------------------------------------------------------
 st.set_page_config(
-    page_title="Josiastrader ✊🏾",
+    page_title="Josiastrader",
     page_icon="⚽",
     layout="wide"
 )
