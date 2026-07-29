@@ -1,9 +1,17 @@
+import streamlit as st
+import streamlit.components.v1 as components
+
+# Configuration de la page Streamlit
+st.set_page_config(page_title="Le Maestros VIP", layout="wide")
+
+# Insérer le code HTML/CSS/JS complet
+html_code = """
 <!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Le Maestros VIP - Pronostics Football</title>
+    <title>Le Maestros VIP</title>
     <style>
         :root {
             --bg-dark: #0d1117;
@@ -30,7 +38,6 @@
             padding-bottom: 30px;
         }
 
-        /* Header */
         header {
             background: linear-gradient(135deg, #1f2937, #111827);
             padding: 20px;
@@ -54,7 +61,6 @@
             margin-top: 4px;
         }
 
-        /* Navigation Bar */
         nav {
             display: flex;
             justify-content: space-around;
@@ -81,7 +87,6 @@
             border-bottom-color: var(--accent-gold);
         }
 
-        /* Main Container */
         .container {
             max-width: 800px;
             margin: 20px auto;
@@ -96,7 +101,6 @@
             display: block;
         }
 
-        /* UI Cards */
         .card {
             background-color: var(--card-bg);
             border: 1px solid var(--border-color);
@@ -127,7 +131,6 @@
         .badge-exact { background-color: var(--accent-gold); color: #000; }
         .badge-vip { background-color: #8b5cf6; color: #fff; }
 
-        /* Betting Items */
         .match-row {
             display: flex;
             justify-content: space-between;
@@ -165,7 +168,6 @@
             cursor: pointer;
         }
 
-        /* Championnats Accordion */
         .country-group {
             margin-bottom: 12px;
         }
@@ -206,7 +208,6 @@
             border-bottom: none;
         }
 
-        /* Calculator */
         .calc-input {
             width: 100%;
             padding: 10px;
@@ -415,7 +416,6 @@
     </div>
 
     <script>
-        // Navigation par onglets
         function switchTab(tabId) {
             document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
             document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
@@ -424,7 +424,6 @@
             event.currentTarget.classList.add('active');
         }
 
-        // Accordéon pour les compétitions
         function toggleAccordion(id) {
             const list = document.getElementById(id);
             if (list.style.display === "block") {
@@ -434,14 +433,12 @@
             }
         }
 
-        // Copier les codes promo/bookmakers
         function copyCode(elementId) {
             const codeText = document.getElementById(elementId).innerText;
             navigator.clipboard.writeText(codeText);
             alert("Code " + codeText + " copié dans le presse-papier !");
         }
 
-        // Calculateur de mise automatique
         function calculateStake() {
             const bankroll = parseFloat(document.getElementById('bankroll').value);
             if (!isNaN(bankroll) && bankroll > 0) {
@@ -455,3 +452,7 @@
     </script>
 </body>
 </html>
+"""
+
+# Rendu de l'application web dans Streamlit
+components.html(html_code, height=900, scrolling=True)
