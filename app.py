@@ -62,7 +62,7 @@ st.markdown("""
 # ---------------------------------------------------------
 # FONCTION REQUÊTE API EN TEMPS RÉEL
 # ---------------------------------------------------------
-API_KEY = "TA_CLE_API_ICI" # Remplace avec ta clé gratuite de API-Football / RapidAPI
+API_KEY = "c084b5445fa0948fc566b6c0aa112228"⁠ # Remplace avec ta clé gratuite de API-Football / RapidAPI
 
 @st.cache_data(ttl=3600) # Rafraîchit les données toutes les heures
 def charger_matchs_reels():
